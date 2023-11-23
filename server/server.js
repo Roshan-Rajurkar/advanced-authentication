@@ -3,12 +3,14 @@ const app = express()
 const auth = require('./routes/auth')
 const ConnectDB = require('./config/ConnectDB')
 require('dotenv').config();
+const errorHandler = require('./middlewares/error')
 
 const PORT = process.env.PORT || 5000
 ConnectDB();
 
 app.use(express.json());
 app.use('/api/auth', auth)
+app.use(errorHandler)
 
 const server = app.listen(PORT, () => {
     console.log('server is running on port', PORT)

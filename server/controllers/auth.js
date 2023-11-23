@@ -1,7 +1,9 @@
-const { decrypt } = require('dotenv');
 const User = require('../models/User')
-
+const jwt = require("jsonwebtoken")
 const bcrypt = require('bcrypt');
+const ErrorResponse = require('../utils/errorResponse');
+const sendEmail = require('../utils/sendEmail');
+require('dotenv').config();
 
 const register = async (req, res, next) => {
     const { username, email, password } = req.body;
@@ -16,15 +18,19 @@ const register = async (req, res, next) => {
 
         const savedUser = await newUser.save();
 
-        res.status(201).json({
-            success: true,
-            user: savedUser,
-        });
+        if (savedUser) {
+            const token = jwt.sign({ username: newUser.username, id: newUser._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
+
+            res.status(200).json({
+                status: true,
+                token,
+                username: newUser.username,
+                id: newUser._id
+            });
+        }
+
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message,
-        });
+        next(error)
     }
 };
 
@@ -50,9 +56,13 @@ const login = async (req, res, next) => {
         const passwordMatch = await bcrypt.compare(password, availableUser.password);
 
         if (passwordMatch) {
+            const token = jwt.sign({ username: availableUser.username, id: availableUser._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
+
             res.status(200).json({
                 status: true,
-                token: '123456789'
+                token,
+                username: availableUser.username,
+                id: availableUser._id
             });
         } else {
             res.status(401).json({
@@ -61,17 +71,40 @@ const login = async (req, res, next) => {
             });
         }
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message,
-        });
+        next(error)
     }
 };
 
 
+const forgotpassword = async (req, res, next) => {
+    const { email } = req.body;
+    try {
+        const user = await User.findOne({ email });
 
-const forgotpassword = (req, res, next) => {
-    res.send("forgot password route")
+        if (!user) return next(new ErrorResponse('Email could not be sent', 404));
+
+        const resetToken = jwt.sign({ email: user.email, id: user._id }, process.env.JWT_RESET_SECRET, { expiresIn: '30m' });
+
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpire = Date.now() + 30 * 60 * 1000;
+        await user.save();
+
+        const resetUrl = `http://localhost:${process.env.FrontEND_PORT}/passwordreset/${resetToken}`
+
+        const message = `
+                    <h1>You have requested a password reset</h1>
+                    <p>Please go to this link to reset your password</p>
+                    <a href=${resetUrl} clicktracking=off>${resetUrl}</a>
+        `
+        try {
+            sendEmail()
+        } catch (error) {
+
+        }
+
+    } catch (error) {
+
+    }
 }
 
 const resetpassword = (req, res, next) => {
