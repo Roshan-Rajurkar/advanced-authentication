@@ -1,4 +1,4 @@
-// here all authentication routes functions are implemented
+const { decrypt } = require('dotenv');
 const User = require('../models/User')
 
 const bcrypt = require('bcrypt');
@@ -15,7 +15,6 @@ const register = async (req, res, next) => {
         });
 
         const savedUser = await newUser.save();
-        // console.log(savedUser)
 
         res.status(201).json({
             success: true,
@@ -29,10 +28,47 @@ const register = async (req, res, next) => {
     }
 };
 
+const login = async (req, res, next) => {
+    const { email, password } = req.body;
 
-const login = (req, res, next) => {
-    res.send("login route")
-}
+    if (!email || !password) {
+        res.status(400).json({
+            status: false,
+            message: 'Please provide the credentials'
+        });
+    }
+
+    try {
+        const availableUser = await User.findOne({ email }).select('+password');
+        if (!availableUser) {
+            res.status(404).json({
+                status: false,
+                message: 'Invalid credentials'
+            });
+            return;
+        }
+        const passwordMatch = await bcrypt.compare(password, availableUser.password);
+
+        if (passwordMatch) {
+            res.status(200).json({
+                status: true,
+                token: '123456789'
+            });
+        } else {
+            res.status(401).json({
+                status: false,
+                message: 'Invalid password'
+            });
+        }
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+
 
 const forgotpassword = (req, res, next) => {
     res.send("forgot password route")
