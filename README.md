@@ -1,50 +1,52 @@
 # advanced-authentication
-Streamline MERN stack projects by prioritizing the early development of login and registration pages, along with backend routes for authentication, to enhance efficiency and save time. You can use this in your application to focus on the main features of the application.
+
+Streamline M-E-R-N stack projects by prioritizing the early development of login and registration pages, along with backend routes for authentication, to enhance efficiency and save time. You can use this in your application to focus on the main features of the application.
+
 ## Getting Started
 
 ### Client
 
 1. Navigate to the `client` directory:
 
-    ```bash
-    cd client
-    ```
+   ```
+   cd client
+   ```
 
 2. Install dependencies:
 
-    ```bash
-    npm install
-    ```
+   ```
+   npm install
+   ```
 
 3. Start the client application:
 
-    ```bash
-    npm start
-    ```
+   ```
+   npm start
+   ```
 
-    The client will be running at `http://localhost:3000`.
+   The client will be running at `http://localhost:3000`.
 
 ### Server
 
 1. Open another terminal and navigate to the `server` directory:
 
-    ```bash
-    cd server
-    ```
+   ```
+   cd server
+   ```
 
 2. Install server dependencies:
 
-    ```bash
-    npm install
-    ```
+   ```
+   npm install
+   ```
 
 3. Start the server:
 
-    ```bash
-    npm start
-    ```
+   ```
+   npm start
+   ```
 
-    The server will be running at `http://localhost:5000`.
+   The server will be running at `http://localhost:5000`.
 
 ## Project Structure
 
