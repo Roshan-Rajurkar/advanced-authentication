@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
-import Register from './components/Register'
 import Login from './components/Login'
+import Register from './components/Register'
 import ForgotPassword from './components/ForgotPassword'
 import ResetPassword from './components/ResetPassword'
 
