@@ -1,13 +1,18 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 const Register = () => {
+    const inputRef = useRef();
+    useEffect(() => {
+        inputRef.current.focus();
+    }, [])
+
     return (
         <div className='flex gap-8 max-w-screen h-screen justify-center items-center' >
             <div className='flex flex-col gap-4 px-12 py-8 bg-red-50 rounded-lg w-2/6'>
                 <h1 className='text-2xl mb-3'>Registration</h1>
                 <div className='flex flex-col gap-1'>
                     <span className='text-slate-500'>Username</span>
-                    <input placeholder='Username' className='max-w border rounded-md py-2 px-3 outline-none text-slate-500 bg-slate-50 text-sm placeholder:opacity-40' type="text" />
+                    <input placeholder='Username' ref={inputRef} className='max-w border rounded-md py-2 px-3 outline-none text-slate-500 bg-slate-50 text-sm placeholder:opacity-40' type="text" />
                 </div>
                 <div className='flex flex-col gap-1'>
                     <span className='text-slate-500'>Email</span>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 const Login = () => {
@@ -6,6 +6,10 @@ const Login = () => {
     const handleShow = () => {
         setShow(!show);
     }
+    const inputRef = useRef();
+    useEffect(() => {
+        inputRef.current.focus();
+    }, [])
     return (
         <div className='flex gap-8 max-w-screen h-screen justify-center items-center' >
             <div className='flex flex-col gap-4 px-12 py-8 bg-red-50 rounded-lg w-2/6'>
@@ -13,7 +17,7 @@ const Login = () => {
 
                 <div className='flex flex-col gap-1'>
                     <span className='text-slate-500'>Email</span>
-                    <input placeholder='Email' className='max-w border rounded-md py-2 px-3 outline-none text-slate-500 bg-slate-50 text-sm placeholder:opacity-40' type="email" />
+                    <input placeholder='Email' ref={inputRef} className='max-w border rounded-md py-2 px-3 outline-none text-slate-500 bg-slate-50 text-sm placeholder:opacity-40' type="email" />
                 </div>
                 <div className='flex flex-col gap-1'>
                     <span className='text-slate-500'>Password</span>
@@ -25,9 +29,9 @@ const Login = () => {
                         />
                         {show ? <FaEye onClick={handleShow} className='absolute right-3 bg-white h-9/10 hover:cursor-pointer' /> : <FaEyeSlash className='absolute right-3 bg-white h-9/10 hover:cursor-pointer' onClick={handleShow} />}
                     </div>
-                    <Link to='/forgotpassword'>
+                    <span><Link to='/forgotpassword'>
                         <a className='text-blue-700 m-y-1 text-sm' href="/">Forgot your password?</a>
-                    </Link>
+                    </Link></span>
 
                 </div>
 
