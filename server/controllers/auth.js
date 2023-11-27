@@ -81,14 +81,17 @@ const forgotpassword = async (req, res, next) => {
     try {
         const user = await User.findOne({ email });
 
+        console.log(user)
+
         if (!user) return next(new ErrorResponse('Email could not be sent', 404));
 
         const resetToken = jwt.sign({ email: user.email, id: user._id }, process.env.JWT_RESET_SECRET, { expiresIn: '30m' });
 
         user.resetPasswordToken = resetToken;
         user.resetPasswordExpire = Date.now() + 30 * 60 * 1000;
-        await user.save();
 
+        await user.save();
+        console.log(user)
         const resetUrl = `http://localhost:${process.env.FrontEND_PORT}/resetpassword/${resetToken}`;
 
         const html = `
@@ -106,7 +109,7 @@ const forgotpassword = async (req, res, next) => {
                 html,
             });
 
-            res.status(200).json({ success: true, data: info });
+            res.status(200).json({ success: true, data: { info } });
         } catch (error) {
             user.resetPasswordToken = undefined;
             user.resetPasswordExpire = undefined;
@@ -120,8 +123,40 @@ const forgotpassword = async (req, res, next) => {
     }
 };
 
-const resetpassword = (req, res, next) => {
-    res.send("reset password route")
-}
+const resetpassword = async (req, res, next) => {
+    const resetPasswordToken = req.params.resetPasswordToken;
+    const { newPassword } = req.body;
+
+    try {
+        const user = await User.findOne({
+            resetPasswordToken,
+            resetPasswordExpire: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return next(new ErrorResponse('Invalid Reset Token', 400));
+        }
+
+        const isSamePassword = await bcrypt.compare(newPassword, user.password);
+        if (isSamePassword) {
+            return next(new ErrorResponse('Password recently used', 500));
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+
+        await user.save();
+
+        console.log(user)
+
+        res.status(200).json({ status: true, message: "Password Updated" });
+
+    } catch (error) {
+        return next(new ErrorResponse('Password could not update', 500));
+    }
+};
 
 module.exports = { register, login, forgotpassword, resetpassword }

@@ -3,21 +3,17 @@ import Login from './components/Login'
 import Register from './components/Register'
 import ForgotPassword from './components/ForgotPassword'
 import ResetPassword from './components/ResetPassword'
+import Home from './components/Home'
 
 function App() {
   return (
     <div className="App ">
       <Routes>
-        <Route path='/' element={<>
-          <a className='m-3' href="http://localhost:3000/register">Register</a>
-          <a className='m-3' href="http://localhost:3000/login">Login</a>
-          <a className='m-3' href="http://localhost:3000/forgotpassword">Forgot Password</a>
-          <a className='m-3' href="http://localhost:3000/resetpassword/:id">Reset Password</a>
-        </>} />
+        <Route path='/' element={<Home />} />
         <Route path='/register' element={<Register />} />
         <Route path='/login' element={<Login />} />
         <Route path='/forgotpassword' element={<ForgotPassword />} />
-        <Route path='/resetpassword/:id' element={<ResetPassword />} />
+        <Route path='/resetpassword/:resetPasswordToken' element={<ResetPassword />} />
       </Routes>
     </div>
   );

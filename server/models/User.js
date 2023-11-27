@@ -22,14 +22,15 @@ const UserSchema = new mongoose.Schema(
             minlength: 6,
             select: false
         },
-        resetpasswordToken: String,
-        resetpasswordExpire: Date,
+        resetPasswordToken: String,
+        resetPasswordExpire: Date,
 
     },
     {
         timestamps: true
     },
 );
+
 
 const User = mongoose.model('user', UserSchema);
 

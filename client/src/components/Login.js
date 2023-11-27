@@ -30,7 +30,7 @@ const Login = () => {
                         {show ? <FaEye onClick={handleShow} className='absolute right-3 bg-white h-9/10 hover:cursor-pointer' /> : <FaEyeSlash className='absolute right-3 bg-white h-9/10 hover:cursor-pointer' onClick={handleShow} />}
                     </div>
                     <span><Link to='/forgotpassword'>
-                        <a className='text-blue-700 m-y-1 text-sm' href="/">Forgot your password?</a>
+                        <a className='text-blue-700 m-y-1 text-sm' href="/">forgot your password?</a>
                     </Link></span>
 
                 </div>
