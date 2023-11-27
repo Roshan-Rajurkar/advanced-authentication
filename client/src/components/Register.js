@@ -36,14 +36,9 @@ const Register = () => {
         setErrors({});
 
         try {
-            const response = await axios.post('/api/register', formData, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'credentials': 'include',
-                },
-            });
-            console.log(response)
-            if (response.status === 200) {
+            const response = await axios.post('http://localhost:5000/api/auth/register', formData);
+            console.log(response);
+            if (response.status === 200 || response.status === 201) {
                 navigate('/login');
             } else {
                 console.error('Registration failed:', response.statusText);
@@ -52,7 +47,6 @@ const Register = () => {
             console.error('Error during registration:', error.message);
         }
 
-        navigate('/login');
     };
 
     // Function to handle input changes
@@ -77,6 +71,8 @@ const Register = () => {
         // Validate username
         if (!data.username.trim()) {
             errors.username = 'Username is required';
+        } else if (data.username.length < 6) {
+            errors.username = 'Username must be at least 6 characters';
         }
 
         // Validate email

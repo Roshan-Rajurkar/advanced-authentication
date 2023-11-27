@@ -38,50 +38,54 @@ const login = async (req, res, next) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-        res.status(400).json({
+        return res.status(400).json({
             status: false,
-            message: 'Please provide the credentials'
+            message: 'Please provide both email and password',
         });
     }
 
     try {
         const availableUser = await User.findOne({ email }).select('+password');
+
         if (!availableUser) {
-            res.status(404).json({
+            return res.status(404).json({
                 status: false,
-                message: 'Invalid credentials'
+                message: 'User not found. Please check your email or register.',
             });
-            return;
         }
+
         const passwordMatch = await bcrypt.compare(password, availableUser.password);
 
         if (passwordMatch) {
-            const token = jwt.sign({ username: availableUser.username, id: availableUser._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
+            const token = jwt.sign(
+                { username: availableUser.username, id: availableUser._id },
+                process.env.JWT_SECRET,
+                { expiresIn: '24h' }
+            );
 
-            res.status(200).json({
+            return res.status(200).json({
                 status: true,
                 token,
                 username: availableUser.username,
-                id: availableUser._id
+                id: availableUser._id,
             });
         } else {
-            res.status(401).json({
+            return res.status(401).json({
                 status: false,
-                message: 'Invalid password'
+                message: 'Invalid password. Please check your password.',
             });
         }
     } catch (error) {
-        next(error)
+        next(error);
     }
 };
+
 
 const forgotpassword = async (req, res, next) => {
     const { email } = req.body;
 
     try {
         const user = await User.findOne({ email });
-
-        console.log(user)
 
         if (!user) return next(new ErrorResponse('Email could not be sent', 404));
 
@@ -91,8 +95,8 @@ const forgotpassword = async (req, res, next) => {
         user.resetPasswordExpire = Date.now() + 30 * 60 * 1000;
 
         await user.save();
-        console.log(user)
-        const resetUrl = `http://localhost:${process.env.FrontEND_PORT}/resetpassword/${resetToken}`;
+
+        const resetUrl = `http://localhost:${process.env.FrontEND_PORT}/api/auth/resetpassword/${resetToken}`;
 
         const html = `
             <h1>You have requested a password reset</h1>
@@ -116,7 +120,7 @@ const forgotpassword = async (req, res, next) => {
 
             await user.save();
 
-            return next(new ErrorResponse('email could not send', 500));
+            return next(new ErrorResponse('Email could not be sent', 500));
         }
     } catch (error) {
         next(error);
@@ -131,15 +135,16 @@ const resetpassword = async (req, res, next) => {
         const user = await User.findOne({
             resetPasswordToken,
             resetPasswordExpire: { $gt: Date.now() }
-        });
+        }).select('+password');
 
         if (!user) {
-            return next(new ErrorResponse('Invalid Reset Token', 400));
+            return next(new ErrorResponse('Invalid or expired reset token', 400));
         }
 
         const isSamePassword = await bcrypt.compare(newPassword, user.password);
+
         if (isSamePassword) {
-            return next(new ErrorResponse('Password recently used', 500));
+            return next(new ErrorResponse('Password recently used', 400));
         }
 
         const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -150,13 +155,14 @@ const resetpassword = async (req, res, next) => {
 
         await user.save();
 
-        console.log(user)
-
-        res.status(200).json({ status: true, message: "Password Updated" });
+        res.status(200).json({ success: true, message: "Password Updated" });
 
     } catch (error) {
-        return next(new ErrorResponse('Password could not update', 500));
+        console.error('Error updating password:', error);
+
+        return next(new ErrorResponse('Password could not be updated', 500));
     }
 };
+
 
 module.exports = { register, login, forgotpassword, resetpassword }
