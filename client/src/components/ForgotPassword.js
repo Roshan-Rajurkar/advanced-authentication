@@ -1,22 +1,50 @@
 import React, { useEffect, useRef, useState } from 'react';
+import axios from 'axios';
 
 const ForgotPassword = () => {
     const inputRef = useRef();
+
     useEffect(() => {
         inputRef.current.focus();
     }, []);
 
-    const [emailStatus, setEmailStatus] = useState(false);
     const [email, setEmail] = useState('');
+    const [emailError, setEmailError] = useState('');
+    const [emailStatus, setEmailStatus] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [serverError, setServerError] = useState('');
 
-    const handleEmailSent = () => {
+    const validateEmail = () => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            setEmailError('Please enter a valid email address');
+            return false;
+        }
+        setEmailError('');
+        return true;
+    };
+
+    const handleEmailSent = async () => {
+        if (!validateEmail()) {
+            return;
+        }
+
         setLoading(true);
 
-        setTimeout(() => {
-            setEmailStatus(!emailStatus);
+        try {
+            const response = await axios.post('http://localhost:5000/api/auth/forgotpassword', { email });
+
+            if (response.status === 200) {
+                setEmailStatus(true);
+                setEmail('')
+            } else {
+                setServerError('Failed to send email. Please try again later.');
+            }
+        } catch (error) {
+            setServerError('Failed to send email. Please try again later.');
+        } finally {
             setLoading(false);
-        }, 5000);
+        }
     };
 
     return (
@@ -29,14 +57,15 @@ const ForgotPassword = () => {
                     <input
                         placeholder='Email'
                         ref={inputRef}
-                        className='max-w border rounded-md py-2 px-3 outline-none text-slate-500 bg-slate-50 text-sm placeholder:opacity-40'
+                        className={`max-w border rounded-md py-2 px-3 outline-none text-slate-500 bg-slate-50 text-sm placeholder:opacity-40 ${emailError && 'border-red-500'}`}
                         type='email'
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                     />
+                    {emailError && <p className='text-red-500 text-xs'>{emailError}</p>}
                 </div>
 
-                <div className="flex flex-col gap-3 w-full justify-around items-center">
+                <div className='flex flex-col gap-3 w-full justify-around items-center'>
                     <button
                         className={`w-full bg-red-400 hover:bg-red-300 px-1 py-2 text-gray-100 ${loading && 'cursor-not-allowed'}`}
                         onClick={handleEmailSent}
@@ -45,12 +74,7 @@ const ForgotPassword = () => {
                         {loading ? 'Sending...' : emailStatus ? 'Sent ✅' : 'Send Email'}
                     </button>
 
-                    {/* 
-                    {emailStatus && (
-                        <button onClick={handleEmailSent} className='underline text-blue-500'>
-                            Resend
-                        </button>
-                    )} */}
+                    {serverError && <p className='text-red-500 text-xs'>{serverError}</p>}
 
                     {emailStatus && (
                         <p className='text-italic'>

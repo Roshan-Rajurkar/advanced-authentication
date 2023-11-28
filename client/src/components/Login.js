@@ -69,7 +69,7 @@ const Login = () => {
         setLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/login', formData);
+            const response = await axios.post('http://localhost:5000/api/auth/login', formData, { credentials: 'include' });
 
             if (response.status === 200) {
                 // Login successful

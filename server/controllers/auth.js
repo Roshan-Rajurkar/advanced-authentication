@@ -60,12 +60,12 @@ const login = async (req, res, next) => {
             const token = jwt.sign(
                 { username: availableUser.username, id: availableUser._id },
                 process.env.JWT_SECRET,
-                { expiresIn: '24h' }
+                { expiresIn: '30m' }
             );
 
-            return res.status(200).json({
+
+            return res.cookie('token', token).status(200).json({
                 status: true,
-                token,
                 username: availableUser.username,
                 id: availableUser._id,
             });
@@ -80,8 +80,8 @@ const login = async (req, res, next) => {
     }
 };
 
-
 const forgotpassword = async (req, res, next) => {
+
     const { email } = req.body;
 
     try {
@@ -96,7 +96,6 @@ const forgotpassword = async (req, res, next) => {
 
         await user.save();
 
-        const resetUrl = `http://localhost:${process.env.FrontEND_PORT}/api/auth/resetpassword/${resetToken}`;
 
         const html = `
             <h1>You have requested a password reset</h1>
@@ -158,11 +157,57 @@ const resetpassword = async (req, res, next) => {
         res.status(200).json({ success: true, message: "Password Updated" });
 
     } catch (error) {
-        console.error('Error updating password:', error);
 
         return next(new ErrorResponse('Password could not be updated', 500));
     }
 };
 
+const getProfile = async (req, res, next) => {
+    console.log(req.cookies)
 
-module.exports = { register, login, forgotpassword, resetpassword }
+    const { token } = req.cookies;
+    console.log(token)
+
+    console.log(req.cookies)
+
+    if (!token) {
+        return res.status(401).json({
+            status: false,
+            message: 'Unauthorized. Please log in.',
+        });
+    }
+
+    try {
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+        const user = await User.findById(decodedToken.id);
+
+        if (!user) {
+            return res.status(404).json({
+                status: false,
+                message: 'User not found.',
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            username: user.username,
+            email: user.email,
+        });
+    } catch (error) {
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({
+                status: false,
+                message: 'Token has expired. Please log in again.',
+            });
+        }
+
+        return res.status(401).json({
+            status: false,
+            message: 'Unauthorized. Please log in.',
+        });
+    }
+};
+
+
+module.exports = { register, login, forgotpassword, resetpassword, getProfile }
