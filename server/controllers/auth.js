@@ -64,11 +64,12 @@ const login = async (req, res, next) => {
             );
 
 
-            return res.cookie('token', token).status(200).json({
+            return res.cookie('AuthToken', token, { httpOnly: true, sameSite: 'strict' }).status(200).json({
                 status: true,
                 username: availableUser.username,
                 id: availableUser._id,
             });
+
         } else {
             return res.status(401).json({
                 status: false,
@@ -163,12 +164,8 @@ const resetpassword = async (req, res, next) => {
 };
 
 const getProfile = async (req, res, next) => {
-    console.log(req.cookies)
 
-    const { token } = req.cookies;
-    console.log(token)
-
-    console.log(req.cookies)
+    const token = req.cookies.AuthToken;
 
     if (!token) {
         return res.status(401).json({

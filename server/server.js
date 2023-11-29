@@ -1,31 +1,31 @@
-const express = require('express')
-const cors = require('cors')
-const app = express()
-const auth = require('./routes/auth')
-const ConnectDB = require('./config/ConnectDB')
+const express = require('express');
+const cors = require('cors');
+const app = express();
+const authRoutes = require('./routes/auth'); // Assuming your routes are in a file named auth.js
+const connectDB = require('./config/connectDB');
 require('dotenv').config();
-const errorHandler = require('./middlewares/error')
+const errorHandler = require('./middlewares/error');
 const cookieParser = require('cookie-parser');
 
-app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
+const PORT = process.env.PORT || 5000;
 
-const PORT = process.env.PORT || 5000
-ConnectDB();
+connectDB();
 
 app.use(express.json());
+app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
 app.use(cookieParser());
-app.use('/api/auth', auth)
-app.use(errorHandler)
+app.use('/api/auth', authRoutes); // Use the authRoutes for authentication
+app.use(errorHandler);
 
 app.get('/', (req, res) => {
-    res.send({ status: 'server is running' })
-})
+    res.send({ status: 'server is running' });
+});
 
 const server = app.listen(PORT, () => {
-    console.log('server is running on port', PORT)
-})
+    console.log('server is running on port', PORT);
+});
 
-process.on("unhandledRejection", (err, promise) => {
-    console.log(`Logged error : ${err}`)
+process.on('unhandledRejection', (err, promise) => {
+    console.log(`Logged error : ${err}`);
     server.close(() => process.exit(1));
-})
+});
